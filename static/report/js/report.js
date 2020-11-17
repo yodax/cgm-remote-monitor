@@ -245,7 +245,9 @@
       options.cob = true;
       options.openAps = true;
     }
-    
+    options.bgcheck = $('#rp_optionsbgcheck').is(':checked');
+    options.othertreatments = $('#rp_optionsothertreatments').is(':checked');
+
     var matchesneeded = 0;
 
     // date range
