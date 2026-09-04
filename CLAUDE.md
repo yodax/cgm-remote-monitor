@@ -1,9 +1,48 @@
 # cgm-remote-monitor — homelab fork (Nightscout)
 
-This is Michael's fork of [Nightscout/cgm-remote-monitor](https://github.com/nightscout/cgm-remote-monitor),
-used to build the custom Docker image that runs the family's Nightscout instance
-at https://nightscout.familie-kroes.nl (deployed from `~/repos/portainer-stacks`,
-stack `stacks/nightscout/`).
+This is Michael's fork of [Nightscout/cgm-remote-monitor](https://github.com/nightscout/cgm-remote-monitor).
+
+> ## ⚠️ OUT OF THE DEPLOY PATH SINCE 2026-09-04 — READ THIS FIRST
+>
+> **This repo no longer builds the image that runs
+> https://nightscout.familie-kroes.nl.** That stack
+> (`~/repos/portainer-stacks`, `stacks/nightscout/`) now runs the **official
+> upstream release** `nightscout/cgm-remote-monitor:15.0.8` straight from Docker
+> Hub. The "Build + deploy procedure" below is kept as reference for how to build
+> a local image *if one is ever needed again*, but it is **not** how Nightscout is
+> deployed today, and running it will not change what is live.
+>
+> Why: the fork's app-code divergence from upstream reached **zero**.
+> - "Fixed the OpenAPS pill and forecast lines from not showing when unexpected
+>   data is present in lastEnacted" (`d2450fcb`) was **merged upstream** as
+>   `aabaebf6` via PR nightscout/cgm-remote-monitor#8324 — tests and fixtures
+>   included — then hardened further by `41dddbaa` + `d198a3cc`. Upstream's
+>   version is a superset: it guards `duration` as well as `rate`, and omits the
+>   Temp Basal segment entirely rather than rendering a malformed one. First
+>   release containing it: **15.0.8** (2026-09-04).
+> - "(Removed global open warning)" (`deb93071`) stubbed out the boot warning
+>   behind `authDefaultRoles == 'readable'`. Dead since 2026-08-06, when the
+>   instance's `.env` was set to `AUTH_DEFAULT_ROLES=denied` — that branch cannot
+>   fire, so the patch guards nothing.
+>
+> Only `CLAUDE.md` (this file) is still fork-only, and it is not app code.
+>
+> **`personal-fixes` is therefore ~318 commits behind `upstream/master` and is
+> deliberately NOT being kept in sync.** Don't "fix" that drift — there is nothing
+> on it that upstream lacks, and merging 318 commits into a branch nothing builds
+> from is pure cost. If you want the branch tidy, the honest end state is to reset
+> it to `upstream/master`, not to merge.
+>
+> **What this repo is FOR now:** developing the next patch and sending it upstream.
+> The OpenAPS fix is the worked example of why — upstream-first took one PR and
+> then permanently removed a build step, a `pull_policy: never` workaround, and a
+> whole class of "is the deployed image current?" question. Start from
+> `upstream/master`, branch, PR. Reach for a local image only as a stopgap while a
+> PR is in flight, and if you do, say so in the compose file's comment.
+
+Until 2026-09-04 this repo built the custom Docker image that ran the family's
+Nightscout instance at https://nightscout.familie-kroes.nl (deployed from
+`~/repos/portainer-stacks`, stack `stacks/nightscout/`).
 
 ## Remotes
 
@@ -40,7 +79,11 @@ git push origin personal-fixes
 Use a merge, not a rebase — this branch is already pushed and long-lived; rebasing
 would force-push and rewrite shared history.
 
-## Build + deploy procedure
+## Build + deploy procedure (HISTORICAL — see the banner at the top)
+
+**This is no longer how Nightscout is deployed.** Kept only so a future stopgap
+local build does not have to be reinvented. The live stack pulls
+`nightscout/cgm-remote-monitor:<release>` from Docker Hub.
 
 There is no CI for this — `.github/workflows/main.yml`'s publish jobs are gated to
 `github.repository_owner == 'nightscout'`, so they never fire on this fork. Building
